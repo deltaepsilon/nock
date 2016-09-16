@@ -1,0 +1,29 @@
+isUser(uid) {auth.uid == uid}
+isAdmin() {true == root.child('nock').child('user').child('read').child('user').child(auth.uid).child('isAdmin').val()}
+
+path /nock/user/owned/{object}/{uid} {
+  read() {isUser(uid)}
+  write() {isUser(uid)}
+}
+path /nock/user/read/{object}/{uid} {
+  read() {isUser(uid)}
+}
+path /nock/user/write/{object}/{uid} {
+  write() {isUser(uid)}
+}
+path /nock/admin {
+  read()  {isAdmin()}
+  write() {isAdmin()}
+}
+
+// Demo stuff. Delete for prod.
+path /firebasePaginator {
+  read() {true}
+}
+path /localFunctions {
+  read() {true}
+}
+path /digits/logins/{uid} {
+  read() {isUser(uid)}
+  write() {isUser(uid)}
+}

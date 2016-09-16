@@ -1,0 +1,11 @@
+bower_components/
+build/
+node_modules/
+
+.firebaserc
+.gitattributes
+env.client.json
+env.json
+service-account.json
+
+functions/

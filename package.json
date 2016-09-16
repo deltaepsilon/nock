@@ -1,0 +1,29 @@
+{
+  "name": "nock",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://travis-ci.org/PolymerElements/polymer-starter-kit.svg?branch=master)](https://travis-ci.org/PolymerElements/polymer-starter-kit)",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "firebase": "^3.4.0"
+  },
+  "devDependencies": {
+    "firebase": "^3.4.0"
+  },
+  "scripts": {
+    "start": "polymer serve",
+    "build": "polymer build && polymer serve build/bundled"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deltaepsilon/nock.git"
+  },
+  "author": "Chris Esplin <chris@quiver.is>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/deltaepsilon/nock/issues"
+  },
+  "homepage": "https://github.com/deltaepsilon/nock#readme"
+}
