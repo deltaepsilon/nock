@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/firebase-ui/firebase-ui.html">
 <link rel="import" href="../../bower_components/firebase-ui/firebase-ui-theme.html">
 <link rel="import" href="../../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../shared-styles.html">
 
 <dom-module id="auth-controller">
@@ -11,16 +12,46 @@
 			:host {
 				font-size: 1rem;
 			}
+			
+			.verification-overlay {
+				position: fixed;
+				top: 0;
+				right: 0;
+				bottom: 0;
+				left: 0;
+				background: rgba(255, 255, 255, .9);
+				z-index: 1;
+
+        text-align: center;
+			}
+
+      .verification-overlay paper-material {
+        max-width: calc(100% - 2rem);
+        width: 400px;
+      }
 		</style>
 		<firebase-ui id="firebaseUI" api-key="[[firebaseConfig.apiKey]]" database-url="[[firebaseConfig.databaseURL]]" auth-domain="[[firebaseConfig.authDomain]]"
 			app-name="[[firebaseConfig.appName]]" enable-google google-client-id="[[googleClientId]]" user="{{userRaw}}"></firebase-ui>
 		<app-indexeddb-mirror key="user" session="123" data="{{userData}}" persisted-data="{{user}}"></app-indexeddb-mirror>
-		<template is="dom-if" if="[[!user]]">
-			<paper-button on-click="login">Login/Register</paper-button>
-		</template>
-		<template is="dom-if" if="[[user]]">
-			<paper-button on-click="logout">Logout</paper-button>
-		</template>
+    <template is="dom-if" if="[[showOverlay]]">
+      <div class="verification-overlay layout vertical center-justified">
+        <paper-material elevation="1">
+          <h3>Check your inbox!</h3>
+          <p>
+            There should be an email waiting for you. Once you've clicked the link to verify that you own [[user.email]], 
+            reload this page to continue with account creation.
+          </p>
+          <p>
+            Click the "send verification" button below to send yourself another verification email.
+          </p>
+          <paper-button class="primary" on-click="sendVerificationEmail">Send Verification to [[user.email]]</paper-button>
+          <br/>
+          <paper-button on-click="signOut">Sign Out</paper-button>
+          <paper-button onclick="location.reload();">Reload Page</paper-button>  
+        </paper-material>
+      </div>
+    </template>
+		
 	</template>
 	<script>
     Polymer({
@@ -43,7 +74,11 @@
            value: null,
            notify: true
          },
-         notifications: Array
+         notifications: Array,
+         showOverlay: {
+           type: Boolean,
+           computed: '_showOverlay(user.*)'
+         }
        },
 
        observers: [
@@ -73,6 +108,11 @@
               throw new Error(err);
             });
          }
+       },
+
+       _showOverlay: function(userChanges) {
+         var user = userChanges.value;
+         return user && !user.emailVerified;
        },
 
        login: function() {

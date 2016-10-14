@@ -138,9 +138,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			<app-drawer>
 				<app-toolbar>Menu</app-toolbar>
 				<iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-					<a name="view1" href="/view1">View One</a>
-					<a name="view2" href="/view2">View Two</a>
-					<a name="view3" href="/view3">View Three</a>
+					<a name="one" href="/one">View One</a>
+					<a name="two" href="/two">View Two</a>
+					<a name="three" href="/three">View Three</a>
 					<hr>
 					<template is="dom-if" if="[[!user]]">
 						<paper-item on-click="login">Login</paper-item>
@@ -170,10 +170,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				</app-header>
 
 				<iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
-					<my-view1 name="view1"></my-view1>
-					<my-view2 name="view2"></my-view2>
-					<my-view3 name="view3"></my-view3>
-					<my-view404 name="view404"></my-view404>
+					<one-view name="one"></one-view>
+          <two-view name="two"></two-view>
+          <three-view name="three"></three-view>
+					<fourohfour-view name="fourohfour"></fourohfour-view>
 				</iron-pages>
 			</app-header-layout>
 		</app-drawer-layout>
@@ -268,17 +268,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _routePageChanged: function(page) {
-        this.page = page || 'view1';
+        this.page = page || 'one';
       },
 
       _pageChanged: function(page) {
         // Load page import on demand. Show 404 page if fails
-        var resolvedPageUrl = this.resolveUrl('my-' + page + '.html');
+        var resolvedPageUrl = this.resolveUrl('views/' + page + '-view.html');
         this.importHref(resolvedPageUrl, null, this._showPage404, true);
       },
 
       _showPage404: function() {
-        this.page = 'view404';
+        this.page = 'fourohfour';
       },
 
       _setEnv: function(env) {
