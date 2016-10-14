@@ -1,0 +1,83 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../firebase-behavior/firebase-behavior.html">
+
+<dom-module id="admin-view">
+	<template>
+		<style include="shared-styles">
+			:host {
+				display: block;
+			}
+		</style>
+		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+		<app-route route="{{subroute}}" pattern="/:id" data="{{subrouteData}}" tail="{{subrouteTail}}"></app-route>
+		<iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="fourohfour" role="admin">
+			<content-view id="adminView" name="content" firebase-app="[[firebaseApp]]" refresh-path="[[refreshPath]]"></content-view>
+			<fourohfour-view name="fourohfour"></fourohfour-view>
+		</iron-pages>
+	</template>
+	<script>
+    Polymer({
+       is: "admin-view",
+
+       behaviors: [FirebaseBehavior],
+
+       properties: {
+         page: {
+           type: String,
+           reflectToAttribute: true,
+           observer: '_pageChanged'
+         },
+         id: {
+           type: String,
+           reflectToAttribute: true,
+           observer: '_idChanged'
+         },
+         route: Object,
+         subroute: Object,
+         subrouteData: Object,
+         account: {
+           type: Object,
+           observer: '_accountChanged'
+         },
+         firebaseApp: Object,
+         model: Object,
+         refreshPath: {
+           type: String,
+           computed: 'replaceWildcard(model.admin.queues.content, "uid", account.user.uid)' 
+         } 
+       },
+
+       observers: [
+        '_routePageChanged(routeData.page)',
+        '_subrouteIdChanged(subrouteData.id)'
+       ],
+
+       _routePageChanged: function(page) {
+         this.page = page;
+       },
+
+       _subrouteIdChanged: function(id) {
+         this.id = id;
+       },
+
+       _pageChanged: function(page) {
+         var resolvedPageUrl = this.resolveUrl('../admin-views/' + page + '-view.html');
+         this.importHref(resolvedPageUrl, null, function () {
+           this.importHref(this.resolveUrl('../views/fourohfour-view.html'), null, null, true);
+         }.bind(this), true);
+       },
+
+       _idChanged: function(id) {
+         console.log('id changed', id);
+       },
+
+       _accountChanged: function(account) {
+         if (account.user && !account.isAdmin) return location = '/';
+       }
+       
+    });
+  </script>
+</dom-module>

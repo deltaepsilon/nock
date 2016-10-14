@@ -117,6 +117,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				color: black;
 				font-weight: bold;
 			}
+      app-toolbar[page="admin"] {
+        background-color: var(--app-secondary-color);
+      }
+      .admin-title {
+        display: none;
+      }
+      app-toolbar[page="admin"] .admin-title {
+        display: block;
+      }
+      app-toolbar[page="admin"] .app-title {
+        display: none;
+      }
 		</style>
 
 		<iron-ajax auto url="/env.client.json" handle-as="json" last-response="{{rawEnv}}"></iron-ajax>
@@ -154,6 +166,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 							<paper-item on-click="sendVerificationEmail">Verify Email</paper-item>
 						</template>
 					</template>
+          <template is="dom-if" if="[[account.isAdmin]]">
+            <hr>
+            <a name="content" href="/admin/content">Content</a>
+          </template>
 				</iron-selector>
 			</app-drawer>
 
@@ -161,9 +177,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			<app-header-layout has-scrolling-region>
 
 				<app-header condenses reveals effects="waterfall">
-					<app-toolbar>
+					<app-toolbar page$="[[page]]">
 						<paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-						<div main-title>My App</div>
+            <template is=""></template>
+						<div main-title class="app-title">Nock</div>
+            <div main-title class="admin-title">Admin</div>
             <notifications-controller id="notificationsController" app-name="[[firebaseApp.name]]" notifications-path="[[notificationsPath]]"
 			notifications="{{notifications}}"></notifications-controller>
 					</app-toolbar>
@@ -173,6 +191,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<one-view name="one"></one-view>
           <two-view name="two"></two-view>
           <three-view name="three"></three-view>
+          <admin-view id="adminView" name="admin" route="[[subroute]]" firebase-app="[[firebaseApp]]" model="[[model]]" account="[[account]]"></admin-view>
 					<fourohfour-view name="fourohfour"></fourohfour-view>
 				</iron-pages>
 			</app-header-layout>
