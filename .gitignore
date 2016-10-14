@@ -4,8 +4,9 @@ node_modules/
 
 .firebaserc
 .gitattributes
-env.client.json
+env.*.json
 env.json
 service-account.json
 
+.vscode
 functions/

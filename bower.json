@@ -18,7 +18,10 @@
     "polymer": "Polymer/polymer#^1.6.0",
     "polymerfire": "firebase/polymerfire#^0.9.7",
     "lodash": "^4.15.0",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3"
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
+    "firebase-ui": "^1.0.10",
+    "app-storage": "PolymerElements/app-storage#^0.9.7"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

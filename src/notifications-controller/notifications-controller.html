@@ -1,0 +1,96 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<dom-module id="notifications-controller">
+	<template>
+		<style include="shared-styles">
+			:host {
+				display: block;
+			}
+      paper-fab {
+        font-size: 1rem;
+      }
+
+      paper-menu-button[hidden] {
+        display: none;
+      }
+		</style>
+
+		<firebase-query id="notifications" app-name="[[appName]]" path="[[notificationsPath]]" data="{{notifications}}"></firebase-query>
+
+		<paper-menu-button horizontal-align="right" vertical-offset="60" hidden$="[[!count]]">
+			<paper-fab class="dropdown-trigger" mini label="[[count]]"></paper-fab>
+			<!--<paper-icon-button icon="announcement" class="dropdown-trigger"></paper-icon-button>-->
+			<paper-menu class="dropdown-content" style="max-height: 50vh;">
+				<template is="dom-repeat" items="[[notifications]]" as="notification">
+					<paper-icon-item style="width: 20rem;" on-click="remove" key="[[notification.$key]]">
+						<div item-icon>[[notification.icon]]</div>
+						<paper-item-body>
+							<div>[[notification.message]]</div>
+						</paper-item-body>
+					</paper-icon-item>
+				</template>
+				<paper-icon-item on-click="clearNotifications">
+					<iron-icon icon="communication:clear-all" item-icon></iron-icon>
+					<paper-item-body>
+						<div>Clear Notifications</div>
+					</paper-item-body>
+				</paper-icon-item>
+			</paper-menu>
+		</paper-menu-button>
+	</template>
+	<script>
+    Polymer({
+       is: "notifications-controller",
+
+       properties: {
+         firebaseApp: Object,
+         notificationsPath: String,
+         notifications: {
+           type: Array,
+           value: [],
+           notify: true
+         },
+         count: {
+           type: Number,
+           computed: '_getCount(notifications.length)'
+         }
+       },
+
+       _getCount: function(length) {
+         return length;
+       },
+
+       remove: function(e) {
+         function getKey(e) {
+           if (typeof e == 'string') return e;
+           if (e.target) return getKey(e.target);
+           if (e.key) return e.key;
+           return getKey(e.parentElement);
+         }
+         return this.$.notifications.ref.child(getKey(e)).remove();
+       },
+
+       clearNotifications: function() {
+         this.$.notifications.ref.remove()
+          .then(function() {
+            this.fire('alert', 'Notifications cleared');
+          }.bind(this));
+       },
+
+       createTestNotification: function() {
+         this.$.notifications.ref.push({icon: '☠️', message: 'Die die die'});
+       }
+    });
+  </script>
+</dom-module>

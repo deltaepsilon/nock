@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+<dom-module id="app-status-indicator">
+  <template>
+    <style>
+      paper-toolbar {
+        background: var(--app-status-indicator-background);
+        color: var(--app-status-indicator-color);
+      }
+      [hide] {
+        display: none;
+      }
+      .overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: var(--overlay-background-light);
+        z-index: 1000;
+      }
+      paper-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin: -14px 0 0 -14px;
+      }
+    </style>
+    <div class="overlay" hide$="[[appLoaded]]">
+      <paper-spinner active$="[[!appLoaded]]" alt="loading"></paper-spinner>
+    </div>
+    <paper-toolbar id="offline" hide$="[[online]]">
+      <span>offline</span>
+    </paper-toolbar>
+  </template>
+  <script>
+    Polymer({
+       is: "app-status-indicator",
+
+       properties: {
+         appLoaded: {
+           type: Boolean,
+           value: true
+         },
+         online: {
+           type: Boolean,
+           value: true
+         }
+       }
+    });
+  </script>
+</dom-module>

@@ -10,11 +10,16 @@
     "firebase": "^3.4.0"
   },
   "devDependencies": {
-    "firebase": "^3.4.0"
+    "firebase": "^3.4.0",
+    "firebase-tools": "^3.0.8",
+    "json-pretty": "0.0.1"
   },
   "scripts": {
     "start": "polymer serve",
-    "build": "polymer build && polymer serve build/bundled"
+    "build": "polymer build && polymer serve build/bundled",
+    "server": "node build.js && cd functions && nodemon runner.js",
+    "runner": "cd functions && nodemon runner.js",
+    "deploy": "node build.js && polymer build && firebase deploy"
   },
   "repository": {
     "type": "git",

@@ -21,86 +21,170 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
 <link rel="import" href="my-icons.html">
+<link rel="import" href="auth-controller/auth-controller.html">
+<link rel="import" href="app-status-indicator/app-status-indicator.html">
+<link rel="import" href="firebase-behavior/firebase-behavior.html">
+<link rel="import" href="notifications-controller/notifications-controller.html">
 <script src="../bower_components/lodash/dist/lodash.min.js"></script>
 
 <dom-module id="my-app">
-  <template>
-    <style>
-      :host {
+	<template>
+		<style>
+			:host {
+				--app-primary-color: #4285f4;
+				--app-secondary-color: black;
+				--app-status-indicator-background: gray;
+				--app-status-indicator-color: white;
+				--overlay-background-light: rgba(255, 255, 255, .75);
+
         --app-primary-color: #4285f4;
         --app-secondary-color: black;
-        display: block;
-      }
-      
-      app-header {
-        color: #fff;
-        background-color: var(--app-primary-color);
-      }
-      
-      app-header paper-icon-button {
-        --paper-icon-button-ink-color: white;
-      }
-      
-      .drawer-list {
-        margin: 0 20px;
-      }
-      
-      .drawer-list a {
-        display: block;
-        padding: 0 16px;
-        text-decoration: none;
-        color: var(--app-secondary-color);
-        line-height: 40px;
-      }
-      
-      .drawer-list a.iron-selected {
-        color: black;
-        font-weight: bold;
-      }
-    </style>
+        --firebase-login-color: #1194f6;
+        --google-login-color: #f02314;
+        --facebook-login-color: #3b519c;
+        --twitter-login-color: #00aaf4;
+        --dark-primary-color: #455A64;
+        --default-primary-color: #607D8B;
+        --primary-color: #607D8B;
+        --light-primary-color: #CFD8DC;
+        --text-primary-color: #FFFFFF;
+        --accent-color: #FF5252;
+        --primary-background-color: #CFD8DC;
+        --primary-text-color: #212121;
+        --secondary-text-color: #727272;
+        --disabled-text-color: #BDBDBD;
+        --divider-color: #B6B6B6;
+        /* Components */
+        /* paper-drawer-panel */
+        --drawer-menu-color: #ffffff;
+        --drawer-border-color: 1px solid #ccc;
+        --drawer-toolbar-border-color: 1px solid rgba(0, 0, 0, 0.22);
+        /* paper-menu */
+        --paper-menu-background-color: #FFFFFF;
+        --paper-menu-button-dropdown-background: #FFFFFF;
+        --menu-link-color: #111111;
+        /*  paper-dialog ;*/
+        --paper-dialog-background-color: #FFFFFF;
+        /* custom */
+        --success-color: #0f9d58;
+        --qv-scrollable-border: #B6B6B6;
+        /*Firebase UI*/
+        --dialog-background-color: #FFFFFF;
+        --dialog-border-radius: 2px;
+        --dialog-max-width: 90vw;
+        --dialog-min-width: 400px;
+        --dialog-min-height: 400px;
+        /* paper-input */
+        /*--paper-input-container-color:       rgba(255, 255, 255, 0.64);*/
+        --paper-input-container-focus-color: #455A64;
+        /*--paper-input-container-input-color: #fff;*/
 
-    <iron-ajax auto url="/env.client.json" handle-as="json" last-response="{{rawEnv}}"></iron-ajax>
-    <firebase-app api-key=></firebase-app>
-    <quiver-environment></quiver-environment>
-    <app-location route="{{route}}"></app-location>
-    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 
-    <app-drawer-layout fullbleed>
-      <!-- Drawer content -->
-      <app-drawer>
-        <app-toolbar>Menu</app-toolbar>
-        <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-          <a name="view1" href="/view1">View One</a>
-          <a name="view2" href="/view2">View Two</a>
-          <a name="view3" href="/view3">View Three</a>
-        </iron-selector>
-      </app-drawer>
+				display: block;
+			}
+			
+			app-header {
+				color: #fff;
+				background-color: var(--app-primary-color);
+			}
+			
+			app-header paper-icon-button {
+				--paper-icon-button-ink-color: white;
+			}
+			
+			.drawer-list {
+				margin: 0 20px;
+			}
+			
+			.drawer-list a {
+				display: block;
+				padding: 0 16px;
+				text-decoration: none;
+				color: var(--app-secondary-color);
+				line-height: 40px;
+			}
+			
+			.drawer-list a.iron-selected {
+				color: black;
+				font-weight: bold;
+			}
+		</style>
 
-      <!-- Main content -->
-      <app-header-layout has-scrolling-region>
+		<iron-ajax auto url="/env.client.json" handle-as="json" last-response="{{rawEnv}}"></iron-ajax>
+		<firebase-app app="{{firebaseApp}}" name="[[env.firebaseConfig.appName]]" api-key="[[env.firebaseConfig.apiKey]]" auth-domain="[[env.firebaseConfig.authDomain]]"
+			database-url="[[env.firebaseConfig.databaseURL]]" storage-bucket="[[env.firebaseConfig.storageBucket]]"></firebase-app>
+		<app-location route="{{route}}"></app-location>
+		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+		<app-route route="{{subroute}}" pattern="/:id" data="{{subrouteData}}"></app-route>
+		<app-localstorage-document key="session" data="{{sessionKey}}"></app-localstorage-document>
+		<auth-controller id="authController" firebase-app="[[firebaseApp]]" user="{{user}}" notifications="[[notifications]]" firebase-config="[[env.firebaseConfig]]"
+			queue-path="[[model.user.write.login]]" google-client-id="[[env.google.clientId]]"></auth-controller>
+		<firebase-document app-name="[[firebaseApp.name]]" path="[[accountPath]]" data="{{accountData}}"></firebase-document>
+		<app-indexeddb-mirror key="account" session="[[session]]" data="{{accountData}}" persisted-data="{{account}}"></app-indexeddb-mirror>
 
-        <app-header condenses reveals effects="waterfall">
-          <app-toolbar>
-            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <div main-title>My App</div>
-          </app-toolbar>
-        </app-header>
+		<app-drawer-layout fullbleed>
+			<app-status-indicator app-loaded="[[ready]]" online="[[online]]"></app-status-indicator>
 
-        <iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
-          <my-view1 name="view1"></my-view1>
-          <my-view2 name="view2"></my-view2>
-          <my-view3 name="view3"></my-view3>
-          <my-view404 name="view404"></my-view404>
-        </iron-pages>
-      </app-header-layout>
-    </app-drawer-layout>
-  </template>
+			<!-- Drawer content -->
+			<app-drawer>
+				<app-toolbar>Menu</app-toolbar>
+				<iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+					<a name="view1" href="/view1">View One</a>
+					<a name="view2" href="/view2">View Two</a>
+					<a name="view3" href="/view3">View Three</a>
+					<hr>
+					<template is="dom-if" if="[[!user]]">
+						<paper-item on-click="login">Login</paper-item>
+						<paper-item on-click="register">Register</paper-item>
+						<paper-item on-click="reset">Reset Password</paper-item>
+					</template>
+					<template is="dom-if" if="[[user]]">
+						<paper-item on-click="signOut">Sign Out</paper-item>
+						<paper-item on-click="changePassword">Change Password</paper-item>
+						<template is="dom-if" if="[[!user.emailVerified]]">
+							<paper-item on-click="sendVerificationEmail">Verify Email</paper-item>
+						</template>
+					</template>
+				</iron-selector>
+			</app-drawer>
 
-  <script>
+			<!-- Main content -->
+			<app-header-layout has-scrolling-region>
+
+				<app-header condenses reveals effects="waterfall">
+					<app-toolbar>
+						<paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+						<div main-title>My App</div>
+            <notifications-controller id="notificationsController" app-name="[[firebaseApp.name]]" notifications-path="[[notificationsPath]]"
+			notifications="{{notifications}}"></notifications-controller>
+					</app-toolbar>
+				</app-header>
+
+				<iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="view404" role="main">
+					<my-view1 name="view1"></my-view1>
+					<my-view2 name="view2"></my-view2>
+					<my-view3 name="view3"></my-view3>
+					<my-view404 name="view404"></my-view404>
+				</iron-pages>
+			</app-header-layout>
+		</app-drawer-layout>
+		<paper-toast id="toast" on-iron-overlay-closed="_removeAlert"></paper-toast>
+	</template>
+
+	<script>
     Polymer({
       is: 'my-app',
+
+      behaviors: [FirebaseBehavior],
 
       properties: {
         page: {
@@ -112,12 +196,76 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         env: {
           type: Object,
           computed: '_setEnv(rawEnv)'
+        },
+        model: {
+          type: Object,
+          computed: '_setModel(rawEnv, env.firebaseConfig, env.environment)'
+        },
+        firebaseApp: {
+          type: Object,
+          value: null
+        },
+        ready: {
+          type: Boolean,
+          computed: '_isReady(env)'
+        },
+        online: {
+          type: Boolean,
+          value: true
+        },
+        alerts: {
+          type: Array,
+          value: []
+        },
+        timeoutId: Number,
+        user: Object,
+        account: Object,
+        accountPath: {
+          type: String,
+          computed: 'replaceWildcard(model.user.read.account, "uid", user.uid)'
+        },
+        notifications: Array,
+        notificationsPath: {
+          type: String,
+          computed: 'replaceWildcard(model.user.owned.notifications, "uid", user.uid)'
+        },
+        sessionKey: {
+          type: String,
+          value: ''
+        },
+        session: {
+          type: String,
+          computed: '_getSession(account.user.uid, sessionKey)'
         }
       },
 
       observers: [
-        '_routePageChanged(routeData.page)'
+        '_routePageChanged(routeData.page)',
+        '_handleFirebaseApp(firebaseApp)',
+        '_handleAlerts(alerts, alerts.splices)'
       ],
+
+      listeners: {
+        error: '_errorHandler',
+        alert: '_alertHandler',
+        removeNotification: '_removeNotificationHandler'
+      },
+
+      _handleFirebaseApp: function(firebaseApp) {
+        var app = this;
+        function setOnline(snap) {
+          app.set('online', snap.val());
+        };
+        if (firebaseApp) {
+          if (this.timeoutId) clearTimeout(this.timeoutId);  
+          firebaseApp.database().ref('.info/connected').on('value', _.debounce(setOnline, 1500, {trailing: true}));
+        } else {
+          // If firebaseApp doesn't get initialized for 2000 millis, then throw then acknowledge offline
+          this.timeoutId = setTimeout(function() {
+            app.set('online', false);
+          }, 2000);  
+        }
+      },
 
       _routePageChanged: function(page) {
         this.page = page || 'view1';
@@ -135,6 +283,82 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _setEnv: function(env) {
         return _.merge(env.defaults, env[location.hostname.split('.').join(':')]);
+      },
+
+      _setModel: function(env, firebaseEnv, environment) {
+        function normalizeModel(model) {
+          var keys = Object.keys(model);
+          var i = keys.length;
+          var result = {};
+          var key;
+          var item;
+
+          while (i--) {
+            key = keys[i];
+            item = model[key];
+            result[key] = typeof item == 'string' ? firebaseEnv.root + '/' + environment + item : normalizeModel(item);
+          }
+          return result;
+        };
+        return normalizeModel(env.model);
+      },
+
+      _isReady: function(env) {
+        return !!env;
+      },
+
+      _errorHandler: function(e) {
+        this.push('alerts', '😡  : ' + e.detail.toString());
+      },
+
+      _alertHandler: function(e) {
+        this.push('alerts', '😀  : ' + e.detail.toString());
+      },
+
+      _handleAlerts: function(alerts) {
+        if (alerts.length) {
+          this.$.toast.text = alerts[0];
+          this.$.toast.show();
+        }
+      },
+
+      _removeAlert: function() {
+        if (this.alerts.length) this.splice('alerts', 0, 1);
+      },
+
+      _removeNotificationHandler: function(e) {
+        this.$.notificationsController.remove(e.detail);
+      },
+
+      _getSession: function(uid, key) {
+        var uid = uid || 'no-user';
+        var key = key || Math.random();
+        this.set('sessionKey', key);
+        return uid + '|' + key;
+      },
+
+      login: function() {
+        this.$.authController.login();
+      },
+
+      register: function() {
+        this.$.authController.register();
+      },
+
+      reset: function() {
+        this.$.authController.reset();
+      },
+
+      signOut: function() {
+        this.$.authController.signOut();
+      },
+
+      changePassword: function() {
+        this.$.authController.changePassword();
+      },
+
+      sendVerificationEmail: function() {
+        this.$.authController.sendVerificationEmail();
       }
     });
   </script>

@@ -1,19 +1,19 @@
 isUser(uid) {auth.uid == uid}
-isAdmin() {true == root.child('nock').child('user').child('read').child('user').child(auth.uid).child('isAdmin').val()}
+isAdmin(environment) {true == root.child('nock').child(environment).child('user').child('read').child('user').child(auth.uid).child('isAdmin').val()}
 
-path /nock/user/owned/{object}/{uid} {
+path /nock/{environment}/user/owned/{object}/{uid} {
   read() {isUser(uid)}
   write() {isUser(uid)}
 }
-path /nock/user/read/{object}/{uid} {
+path /nock/{environment}/user/read/{object}/{uid} {
   read() {isUser(uid)}
 }
-path /nock/user/write/{object}/{uid} {
+path /nock/{environment}/user/write/{object}/{uid} {
   write() {isUser(uid)}
 }
-path /nock/admin {
-  read()  {isAdmin()}
-  write() {isAdmin()}
+path /nock/{environment}/admin {
+  read()  {isAdmin(environment)}
+  write() {isAdmin(environment)}
 }
 
 // Demo stuff. Delete for prod.

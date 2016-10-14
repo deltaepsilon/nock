@@ -3,10 +3,14 @@
     "rules": "database.rules.bolt"
   },
   "hosting": {
-    "public": "build/bundled",
+    "public": "build/unbundled",
     "rewrites": [
       {
-        "source": "**/!{*.*}",
+        "source": "/__/auth/action",
+        "destination": "/__/auth/action"
+      },
+      {
+        "source": "**",
         "destination": "/index.html"
       }
     ]
