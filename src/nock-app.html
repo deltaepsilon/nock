@@ -29,14 +29,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <link rel="import" href="../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../bower_components/paper-item/paper-item.html">
-<link rel="import" href="my-icons.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="auth-controller/auth-controller.html">
 <link rel="import" href="app-status-indicator/app-status-indicator.html">
 <link rel="import" href="firebase-behavior/firebase-behavior.html">
 <link rel="import" href="notifications-controller/notifications-controller.html">
 <script src="../bower_components/lodash/dist/lodash.min.js"></script>
 
-<dom-module id="my-app">
+<dom-module id="nock-app">
 	<template>
 		<style>
 			:host {
@@ -201,7 +201,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 	<script>
     Polymer({
-      is: 'my-app',
+      is: 'nock-app',
 
       behaviors: [FirebaseBehavior],
 

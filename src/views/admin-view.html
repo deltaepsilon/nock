@@ -4,6 +4,8 @@
 
 <link rel="import" href="../firebase-behavior/firebase-behavior.html">
 
+<script src="../../bower_components/lodash/dist/lodash.min.js"></script>
+
 <dom-module id="admin-view">
 	<template>
 		<style include="shared-styles">
@@ -14,7 +16,7 @@
 		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
 		<app-route route="{{subroute}}" pattern="/:id" data="{{subrouteData}}" tail="{{subrouteTail}}"></app-route>
 		<iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="fourohfour" role="admin">
-			<content-view id="adminView" name="content" firebase-app="[[firebaseApp]]" refresh-path="[[refreshPath]]"></content-view>
+			<content-view id="contentView" name="content" firebase-app="[[firebaseApp]]" refresh-path="[[refreshPath]]" content-path="[[model.content.root]]"></content-view>
 			<fourohfour-view name="fourohfour"></fourohfour-view>
 		</iron-pages>
 	</template>
@@ -47,7 +49,7 @@
          refreshPath: {
            type: String,
            computed: 'replaceWildcard(model.admin.queues.content, "uid", account.user.uid)' 
-         } 
+         }
        },
 
        observers: [
@@ -74,9 +76,9 @@
          console.log('id changed', id);
        },
 
-       _accountChanged: function(account) {
-         if (account.user && !account.isAdmin) return location = '/';
-       }
+       _accountChanged: _.debounce(function(account) {
+         if (!account.user || !account.isAdmin) return location = '/';
+       }, 5000, {trailing: true})
        
     });
   </script>

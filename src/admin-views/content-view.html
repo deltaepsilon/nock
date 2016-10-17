@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
 <link rel="import" href="../shared-styles.html">
 
 <dom-module id="content-view">
@@ -23,6 +24,14 @@
       </p>
       <paper-fab on-click="refresh" icon="refresh"></paper-fab>
     </paper-material>
+
+    <firebase-query id="classes" app-name="[[firebaseApp.name]]" path="[[classesPath]]" data="{{classesData}}"></firebase-query>
+    <template is="dom-repeat" items="[[classesData]]" as="class">
+      <h3>[[class.$key]]</h3>
+      <paper-material elevation="1">
+        Class list goes here
+      </paper-material>
+    </template>
   </template>
   <script>
     Polymer({
@@ -30,7 +39,17 @@
 
        properties: {
          firebaseApp: Object,
-         refreshPath: String
+         refreshPath: String,
+         contentPath: String,
+         classesPath: {
+           type: String,
+           computed: '_getPath(contentPath, "classes")'
+         },
+         classesData: Array
+       },
+
+       _getPath: function(contentPath, section) {
+         return contentPath + '/' + section;
        },
 
        refresh: function() {
