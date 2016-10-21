@@ -48,7 +48,7 @@
 		<app-indexeddb-mirror key="inventory" session="[[session]]" data="{{cleanedData}}" persisted-data="{{inventory}}"></app-indexeddb-mirror>
 
 		<paper-material elevation="1">
-			<template is="dom-repeat" items="[[inventory]]" sort="inventorySort" observe="description">
+			<template is="dom-repeat" items="[[inventory]]">
 				<paper-item class="underlined">
 					<paper-item-body two-line>
 						<div >
@@ -103,8 +103,6 @@
        _cleanedData: function(inventoryData) {
          return inventoryData.filter(function(item) {
            return item.$key !== 'metadata';
-         }).sort(function(a, b) {
-           return a.description > b.description;
          });
        },
 
