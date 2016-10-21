@@ -1,6 +1,6 @@
 isUser(uid) {auth.uid == uid}
 isAdmin(environment) {true == root.child('nock').child(environment).child('user').child('read').child('account').child(auth.uid).child('isAdmin').val()}
-isSubscriber(environment, classId, auth) {true == root.child('nock').child(environment).child('user').child('read').child('classes').child(auth.uid).child(classId).val()}
+isSubscriber(environment, type, key, auth) {true == root.child('nock').child(environment).child('user').child('read').child(type).child(auth.uid).child(key).val()}
 
 path /nock/{environment}/public {
   read()  {true}
@@ -30,8 +30,8 @@ path /nock/{environment}/content {
   read()  {isAdmin(environment)}
 }
 
-path /nock/{environment}/content/classes/{classId} {
-  read()  {isSubscriber(environment, classId, auth)}
+path /nock/{environment}/content/{type}/{key} {
+  read()  {isSubscriber(environment, type, key, auth) || isAdmin(environment)}
 }
 
 // Demo stuff. Delete for prod.

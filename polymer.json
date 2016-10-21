@@ -10,6 +10,7 @@
   "sourceGlobs": [
    "src/**/*",
    "images/**/*",
+   "bower_components/**/*",
    "bower.json",
    "env.client.json"
   ],

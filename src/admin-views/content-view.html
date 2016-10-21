@@ -1,62 +1,133 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../shared-styles.html">
+<script src="../../bower_components/time-elements/time-elements.js"></script>
 
 <dom-module id="content-view">
-  <template>
-    <style include="shared-styles">
-      :host {
-        display: block;
-      }
-      paper-fab {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-      }
-    </style>
-    <paper-material elevation="1">
-      <h3>Refresh Content</h3>
-      <p>
-        Pull all content from GitHub and refresh the database.
-      </p>
-      <paper-fab on-click="refresh" icon="refresh"></paper-fab>
-    </paper-material>
+	<template>
+		<style include="shared-styles">
+			:host {
+				display: block;
+			}
+			
+			paper-fab {
+				position: absolute;
+				top: 1rem;
+				right: 1rem;
+			}
+			
+			paper-material.tile {
+				max-width: calc(50vw - 12rem);
+				min-width: 20rem
+			}
+		</style>
+		<paper-material elevation="1">
+			<h3>Refresh Content</h3>
+			<p>
+				Pull all content from GitHub and refresh the database.
+			</p>
+      <aside>
+        Last updated: <time-ago datetime$="[[contentData.updated]]"></time-ago>
+      </aside>
+			<paper-fab on-click="refresh" icon="refresh"></paper-fab>
+		</paper-material>
 
-    <firebase-query id="classes" app-name="[[firebaseApp.name]]" path="[[classesPath]]" data="{{classesData}}"></firebase-query>
-    <template is="dom-repeat" items="[[classesData]]" as="class">
-      <h3>[[class.$key]]</h3>
-      <paper-material elevation="1">
-        Class list goes here
-      </paper-material>
-    </template>
-  </template>
-  <script>
+		<firebase-document id="classes" app-name="[[firebaseApp.name]]" path="[[contentPath]]" data="{{contentData}}"></firebase-document>
+		<app-indexeddb-mirror key="classes" session="[[session]]" data="{{contentFlattened}}" persisted-data="{{content}}"></app-indexeddb-mirror>
+
+		<template is="dom-repeat" items="[[content]]" as="contentType">
+			<paper-toolbar>
+				<div style="text-transform: uppercase">[[contentType.$key]]</div>
+			</paper-toolbar>
+			<div class="layout horizontal wrap">
+				<template is="dom-repeat" items="[[contentType]]" as="contentItem">
+					<paper-material elevation="1" class="tile">
+						<h3 style="text-transform: capitalize;">[[contentItem.$key]]</h3>
+            <template is="dom-repeat" items="[[contentItem]]" as="item">
+              <a class="unstyled" href="/admin/[[contentType.$key]]/[[contentItem.$key]]/[[item.$key]]">
+                <paper-icon-item content-key="[[contentType.$key]]" item-key="[[item.$key]]">
+                  <span item-icon>[[index]]</span>
+                  <paper-item-body two-line>
+                    <div>
+                      <strong>[[item.frontMatter.title]]</strong>
+                    </div>
+                    <div secondary>
+                      [[item.frontMatter.description]]
+                    </div>
+                  </paper-item-body>
+                </paper-icon-item>
+              </a>
+            </template>
+					</paper-material>
+				</template>
+			</div>
+
+		</template>
+	</template>
+	<script>
     Polymer({
        is: "content-view",
 
        properties: {
+         session: String,
          firebaseApp: Object,
          refreshPath: String,
          contentPath: String,
-         classesPath: {
-           type: String,
-           computed: '_getPath(contentPath, "classes")'
-         },
-         classesData: Array
+         contentData: Object,
+         contentFlattened: {
+           type: Array,
+           computed: '_flatten(contentData, contentData.*)'
+         }
        },
 
-       _getPath: function(contentPath, section) {
-         return contentPath + '/' + section;
+       _flatten: function(contentData) {
+         function flatten(obj) {
+           if (Array.isArray(obj)) return obj;
+
+           var result = [];
+           var temp = []; 
+           for (var prop in obj) {
+             if (prop == 'all' || prop == 'updated') continue;
+             result.push(obj[prop].frontMatter ? obj[prop] : flatten(obj[prop]));
+             result[result.length - 1].$key = prop;
+           }
+           return result;
+         };
+         return Object.keys(contentData).length ?  flatten(contentData) : [];
        },
 
        refresh: function() {
          this.firebaseApp.database().ref(this.refreshPath).set({
            timestamp: new Date().toString()
          });
+       },
+
+       goToItemPage: function(e) {
+         var singular = {
+           assignments: 'assignment',
+           classes: 'class',
+           products: 'product'
+         };
+         function getElement(el, elIs) {
+           return el.is == elIs ? el : getElement(el.parentElement, elIs);
+         }
+         var paperIconItem = getElement(e.target, 'paper-icon-item');
+         return location = '/admin/' + singular[paperIconItem.contentKey] + '/' + paperIconItem.itemKey;  
+         this.fire('goTo', {
+           page: 'admin',
+           adminPage: singular[paperIconItem.contentKey],
+           id: paperIconItem.itemKey
+         });
        }
+
+       
+
     });
   </script>
 </dom-module>

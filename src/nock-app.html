@@ -169,6 +169,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           <template is="dom-if" if="[[account.isAdmin]]">
             <hr>
             <a name="content" href="/admin/content">Content</a>
+            <a name="inventory" href="/admin/inventory">Inventory</a>
           </template>
 				</iron-selector>
 			</app-drawer>
@@ -191,7 +192,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<one-view name="one"></one-view>
           <two-view name="two"></two-view>
           <three-view name="three"></three-view>
-          <admin-view id="adminView" name="admin" route="[[subroute]]" firebase-app="[[firebaseApp]]" model="[[model]]" account="[[account]]"></admin-view>
+          <admin-view id="adminView" name="admin" session="[[session]]" route="[[subroute]]" firebase-app="[[firebaseApp]]" model="[[model]]" account="[[account]]"></admin-view>
 					<fourohfour-view name="fourohfour"></fourohfour-view>
 				</iron-pages>
 			</app-header-layout>
@@ -267,7 +268,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       listeners: {
         error: '_errorHandler',
         alert: '_alertHandler',
-        removeNotification: '_removeNotificationHandler'
+        removeNotification: '_removeNotificationHandler',
+        goTo: '_goTo'
       },
 
       _handleFirebaseApp: function(firebaseApp) {
@@ -354,6 +356,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var key = key || Math.random();
         this.set('sessionKey', key);
         return uid + '|' + key;
+      },
+
+      _goTo: function(e) {
+        this.page = e.detail.page;
       },
 
       login: function() {

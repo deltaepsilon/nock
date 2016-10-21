@@ -25,7 +25,13 @@
     };
 
     function replaceWildcard(path, wildcard, value) {
-      return path.replace(new RegExp('{' + wildcard + '}'), value);
+      var args = Array.prototype.slice.call(arguments);
+      if (args.length < 5) return path.replace(new RegExp('{' + wildcard + '}'), value);
+      
+      var nextArgs = args.splice(1, 2);
+      nextArgs.unshift(path);
+      args[0] = replaceWildcard.apply(this, nextArgs);
+      return replaceWildcard.apply(this, args);
     };
 
     window.FirebaseBehavior = {

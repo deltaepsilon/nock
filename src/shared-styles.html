@@ -42,6 +42,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				color: #212121;
 				font-size: 22px;
 			}
+
+			aside {
+				color: var(--secondary-text-color);
+			}
+
+			a, a:visited {
+				color: inherit;
+			}
+
+			a.unstyled {
+				color: inherit;
+				text-decoration: inherit;
+			}
 			
 			paper-material {
 				border-radius: 2px;
@@ -54,6 +67,38 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			paper-button.primary {
 				background: var(--default-primary-color);
 				color: var(--text-primary-color);
+			}
+
+			.markdown-html img {
+				margin: auto;
+				display: block;
+				max-width: 100%;
+			}
+
+			.bullet-list {
+				list-style: none;
+				padding-left: 0;
+				@apply(--layout-horizontal);
+				@apply(--layout-wrap);
+			}
+
+			.bullet-list li:before {
+				content: "•";
+				margin-left: .5rem;
+				margin-right: .25rem;
+			}
+			.bullet-list li:first-of-type:before {
+				content: "";
+				margin-left: 0;
+				margin-right: 0;
+			}
+
+			paper-item.underlined {
+				border-bottom: 1px solid var(--divider-color);
+			}
+
+			paper-item.underlined:last-of-type {
+				border-bottom: none;
 			}
 		</style>
 	</template>

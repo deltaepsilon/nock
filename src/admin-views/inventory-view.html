@@ -1,0 +1,119 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../shared-styles.html">
+<script src="../../bower_components/time-elements/time-elements.js"></script>
+
+<dom-module id="inventory-view">
+	<template>
+		<style include="shared-styles">
+			:host {
+				display: block;
+			}
+			
+			paper-fab {
+				position: absolute;
+				top: 1rem;
+				right: 1rem;
+			}
+			
+			li[value="0"] {
+				display: none;
+			}
+
+      li[value="0-available"] {
+				color: var(--accent-color);
+			}
+
+      paper-item {
+        padding-top: 1rem;
+      }
+		</style>
+		<paper-material elevation="1">
+			<h3>Refresh Inventory</h3>
+			<p>
+				Pull all inventory from Royal4 and refresh the database.
+			</p>
+			<aside>
+				Last updated: <time-ago datetime$="[[updated]]"></time-ago> 
+			</aside>
+			<paper-fab on-click="refresh" icon="refresh"></paper-fab>
+		</paper-material>
+
+		<firebase-query id="inventory" app-name="[[firebaseApp.name]]" path="[[inventoryPath]]" data="{{inventoryData}}"></firebase-query>
+		<app-indexeddb-mirror key="inventory" session="[[session]]" data="{{cleanedData}}" persisted-data="{{inventory}}"></app-indexeddb-mirror>
+
+		<paper-material elevation="1">
+			<template is="dom-repeat" items="[[inventory]]" sort="inventorySort" observe="description">
+				<paper-item class="underlined">
+					<paper-item-body two-line>
+						<div >
+							<strong>[[item.description]]</strong>
+						</div>
+						<div secondary class="layout horizontal justified">
+							<ul class="bullet-list">
+								<li value$="[[item.quantityAvailable]]-available">[[item.quantityAvailable]] available</li>
+								<li value$="[[item.quantityOnHand]]">[[item.quantityOnHand]] on hand</li>
+								<li value$="[[item.quantityExpected]]">[[item.quantityExpected]] expected</li>
+								<li value$="[[item.quantityAllocated]]">[[item.quantityAllocated]] allocated</li>
+								<li value$="[[item.quantityOnHold]]">[[item.quantityOnHold]] on hold</li>
+								<li value$="[[item.unitCost]]">[[item.unitCost]] unit cost</li>
+								<li value$="[[item.totalValue]]">[[item.totalValue]] total value</li>
+							</ul>
+              <span style="margin-top: 14px;">[[item.id]]</span>
+						</div>
+					</paper-item-body>
+				</paper-item>
+			</template>
+		</paper-material>
+	</template>
+	<script>
+    Polymer({
+       is: "inventory-view",
+
+       properties: {
+         refreshPath: String,
+         inventoryPath: String,
+         inventoryData: Array,
+         cleanedData: {
+           type: Array,
+           computed: '_cleanedData(inventoryData, inventoryData.splices)'
+         },
+         inventory: Array,
+         updated: {
+           type: String,
+           computed: '_updated(inventoryData, inventoryData.splices)'
+         }
+       },
+
+       refresh: function() {
+         this.firebaseApp.database().ref(this.refreshPath).set({
+           timestamp: new Date().toString()
+         });
+       },
+
+       inventorySort: function(a, b) {
+         return a.description > b.description;
+       },
+
+       _cleanedData: function(inventoryData) {
+         return inventoryData.filter(function(item) {
+           return item.$key !== 'metadata';
+         }).sort(function(a, b) {
+           return a.description > b.description;
+         });
+       },
+
+       _updated: function(inventoryData) {
+         var metadata = inventoryData.filter(function(item) {
+           return item.$key == 'metadata'
+         }); 
+         return metadata.length ? metadata[0].updated : undefined;
+       }
+    });
+  </script>
+</dom-module>

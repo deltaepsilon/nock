@@ -1,0 +1,43 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../../bower_components/app-storage/app-indexeddb-mirror/app-indexeddb-mirror.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/marked-element/marked-element.html">
+<link rel="import" href="../shared-styles.html">
+
+<link rel="import" href="../firebase-behavior/firebase-behavior.html">
+
+<dom-module id="product-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+    </style>
+
+    <firebase-document id="product" app-name="[[appName]]" path="[[path]]" data="{{productData}}"></firebase-document>
+    <app-indexeddb-mirror key="[[path]]" session="[[session]]" data="{{productData}}" persisted-data="{{product}}"></app-indexeddb-mirror>
+
+    <paper-material elevation="1">
+      <h3>[[product.frontMatter.class]]: [[product.frontMatter.title]]</h3>
+      <aside>[[product.frontMatter.description]]</aside>
+      <hr>
+      <marked-element markdown="[[product.content]]">
+        <div class="markdown-html"></div>
+      </marked-element>
+    </paper-material>
+  </template>
+  <script>
+    Polymer({
+       is: "product-view",
+
+       behaviors: [FirebaseBehavior],
+
+       properties: {
+         appName: String,
+         session: String,
+         path: String, 
+       }
+    });
+  </script>
+</dom-module>

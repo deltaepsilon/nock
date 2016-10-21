@@ -13,10 +13,20 @@
 				display: block;
 			}
 		</style>
-		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-		<app-route route="{{subroute}}" pattern="/:id" data="{{subrouteData}}" tail="{{subrouteTail}}"></app-route>
+		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{typeRoute}}"></app-route>
+		<app-route route="{{typeRoute}}" pattern="/:type" data="{{typeRouteData}}" tail="{{typeRouteTail}}"></app-route>
+    <app-route route="{{typeRouteTail}}" pattern="/:key" data="{{keyRouteData}}" tail="{{keyRouteTail}}"></app-route>
 		<iron-pages selected="[[page]]" attr-for-selected="name" fallback-selection="fourohfour" role="admin">
-			<content-view id="contentView" name="content" firebase-app="[[firebaseApp]]" refresh-path="[[refreshPath]]" content-path="[[model.content.root]]"></content-view>
+      <!--Content-->
+			<content-view id="contentView" name="content" firebase-app="[[firebaseApp]]" session="[[session]]" refresh-path="[[contentRefreshPath]]" content-path="[[model.content.root]]"></content-view>
+      <assignment-view id="assignmentView" name="assignment" session="[[session]]" app-name="[[firebaseApp.name]]" path="[[assignmentPath]]"></assignment-view>
+      <class-view id="classView" name="class" session="[[session]]" app-name="[[firebaseApp.name]]" path="[[classPath]]"></class-view>
+      <product-view id="productView" name="product" session="[[session]]" app-name="[[firebaseApp.name]]" path="[[productPath]]"></product-view>
+
+      <!--Inventory-->
+      <inventory-view id="inventoryView" name="inventory" firebase-app="[[firebaseApp]]" session="[[session]]" refresh-path="[[inventoryRefreshPath]]" inventory-path="[[model.admin.inventory]]"></inventory-view>
+
+      <!--404-->
 			<fourohfour-view name="fourohfour"></fourohfour-view>
 		</iron-pages>
 	</template>
@@ -27,15 +37,21 @@
        behaviors: [FirebaseBehavior],
 
        properties: {
+         session: String,
          page: {
            type: String,
            reflectToAttribute: true,
            observer: '_pageChanged'
          },
-         id: {
+         type: {
            type: String,
            reflectToAttribute: true,
-           observer: '_idChanged'
+           observer: '_typeChanged'
+         },
+         key: {
+           type: String,
+           reflectToAttribute: true,
+           observer: '_keyChanged'
          },
          route: Object,
          subroute: Object,
@@ -46,23 +62,54 @@
          },
          firebaseApp: Object,
          model: Object,
-         refreshPath: {
+         contentRefreshPath: {
            type: String,
            computed: 'replaceWildcard(model.admin.queues.content, "uid", account.user.uid)' 
-         }
+         },
+         assignmentPath: {
+           type: String,
+           computed: 'replaceWildcard(model.content.assignment, "classKey", type, "assignmentKey", key, account.user.uid)'
+         },
+         classPath: {
+           type: String,
+           computed: 'replaceWildcard(model.content.class, "classKey", type, "pageKey", key, account.user.uid)'
+         },
+         productPath: {
+           type: String,
+           computed: 'replaceWildcard(model.content.product, "type", type, "productKey", key, account.user.uid)'
+         },
+         inventoryRefreshPath: {
+           type: String,
+           computed: 'replaceWildcard(model.admin.queues.inventory, "uid", account.user.uid)' 
+         },
        },
 
        observers: [
         '_routePageChanged(routeData.page)',
-        '_subrouteIdChanged(subrouteData.id)'
+        '_typeRouteTypeChanged(typeRouteData.type)',
+        '_keyRouteKeyChanged(keyRouteData.key)'
        ],
 
-       _routePageChanged: function(page) {
-         this.page = page;
+       listeners: {
+        goTo: '_goTo'
        },
 
-       _subrouteIdChanged: function(id) {
-         this.id = id;
+       _routePageChanged: function(page) {
+         var singular = {
+           assignments: 'assignment',
+           classes: 'class',
+           products: 'product'
+         };
+
+         this.page = singular[page] || page;
+       },
+
+       _typeRouteTypeChanged: function(type) {
+         this.type = type;
+       },
+
+       _keyRouteKeyChanged: function(key) {
+         this.key = key;
        },
 
        _pageChanged: function(page) {
@@ -72,13 +119,24 @@
          }.bind(this), true);
        },
 
-       _idChanged: function(id) {
-         console.log('id changed', id);
+       _typeChanged: function(type) {
+         //console.log('type changed', type);
+       },
+
+       _keyChanged: function(id) {
+         //console.log('id changed', id);
        },
 
        _accountChanged: _.debounce(function(account) {
          if (!account.user || !account.isAdmin) return location = '/';
-       }, 5000, {trailing: true})
+       }, 5000, {trailing: true}),
+
+       _goTo: function(e) {
+         if (e.detail.adminPage) {
+           this.page = e.detail.adminPage;
+           this.key = e.detail.key;
+         }
+       }
        
     });
   </script>
