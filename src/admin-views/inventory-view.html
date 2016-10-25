@@ -39,13 +39,14 @@
 				Pull all inventory from Royal4 and refresh the database.
 			</p>
 			<aside>
-				Last updated: <time-ago datetime$="[[updated]]"></time-ago> 
+				<a href$="[[metadata.url]]" download>[[metadata.filename]]</a> updated: <time-ago datetime$="[[metadata.updated]]"></time-ago> 
 			</aside>
 			<paper-fab on-click="refresh" icon="refresh"></paper-fab>
 		</paper-material>
 
 		<firebase-query id="inventory" app-name="[[firebaseApp.name]]" path="[[inventoryPath]]" data="{{inventoryData}}"></firebase-query>
 		<app-indexeddb-mirror key="inventory" session="[[session]]" data="{{cleanedData}}" persisted-data="{{inventory}}"></app-indexeddb-mirror>
+		<app-indexeddb-mirror key="inventoryMetadata" session="[[session]]" data="{{inventoryMetadata}}" persisted-data="{{metadata}}"></app-indexeddb-mirror>
 
 		<paper-material elevation="1">
 			<template is="dom-repeat" items="[[inventory]]">
@@ -84,9 +85,9 @@
            computed: '_cleanedData(inventoryData, inventoryData.splices)'
          },
          inventory: Array,
-         updated: {
+         inventoryMetadata: {
            type: String,
-           computed: '_updated(inventoryData, inventoryData.splices)'
+           computed: '_inventoryMetadata(inventoryData, inventoryData.splices)'
          }
        },
 
@@ -106,11 +107,11 @@
          });
        },
 
-       _updated: function(inventoryData) {
+       _inventoryMetadata: function(inventoryData) {
          var metadata = inventoryData.filter(function(item) {
            return item.$key == 'metadata'
          }); 
-         return metadata.length ? metadata[0].updated : undefined;
+         return metadata.length ? metadata[0] : undefined;
        }
     });
   </script>

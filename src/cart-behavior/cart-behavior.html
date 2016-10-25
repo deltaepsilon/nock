@@ -1,0 +1,32 @@
+<script>
+  (function() {
+    function flattenVariations(frontMatter) {
+      var variations = [];
+      if (!frontMatter.variations) {
+        variations.push({
+          name: frontMatter.title,
+          price: frontMatter.price,
+          sku: frontMatter.sku,
+          slug: frontMatter.slug,
+          quantityOnHand: frontMatter.quantityOnHand
+        });
+      } else {
+        for (var variationKey in frontMatter.variations) {
+          var variation = frontMatter.variations[variationKey];
+          variations.push({
+            name: variation.name || frontMatter.title,
+            price: variation.price || frontMatter.price,
+            sku: variation.sku || frontMatter.sku,
+            slug: variation.slug || frontMatter.slug,
+            quantityOnHand: typeof variation.quantityOnHand != 'undefined' ? variation.quantityOnHand : frontMatter.quantityOnHand
+          });
+        }
+      }
+      return frontMatter.variations = variations, frontMatter;
+    };
+
+    window.CartBehavior = {
+      flattenVariations: flattenVariations
+    };
+  })();
+</script>

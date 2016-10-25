@@ -9,6 +9,8 @@
 <link rel="import" href="../shared-styles.html">
 <script src="../../bower_components/time-elements/time-elements.js"></script>
 
+<link rel="import" href="../cart-behavior/cart-behavior.html">
+
 <dom-module id="content-view">
 	<template>
 		<style include="shared-styles">
@@ -26,15 +28,32 @@
 				max-width: calc(50vw - 12rem);
 				min-width: 20rem
 			}
+
+      .inventory:before {
+        content: "| ∞";
+      }
+
+      .inventory[inventory]:before {
+        content: "| ";
+      }
+
+      .inventory[inventory]:after {
+        content: " count";
+      }
+
+      .inventory[inventory="0"] {
+        color: var(--accent-color);
+      }
 		</style>
 		<paper-material elevation="1">
 			<h3>Refresh Content</h3>
 			<p>
 				Pull all content from GitHub and refresh the database.
 			</p>
-      <aside>
-        Last updated: <time-ago datetime$="[[contentData.updated]]"></time-ago>
-      </aside>
+			<aside>
+				Last updated:
+				<time-ago datetime$="[[contentData.updated]]"></time-ago>
+			</aside>
 			<paper-fab on-click="refresh" icon="refresh"></paper-fab>
 		</paper-material>
 
@@ -49,21 +68,31 @@
 				<template is="dom-repeat" items="[[contentType]]" as="contentItem">
 					<paper-material elevation="1" class="tile">
 						<h3 style="text-transform: capitalize;">[[contentItem.$key]]</h3>
-            <template is="dom-repeat" items="[[contentItem]]" as="item">
-              <a class="unstyled" href="/admin/[[contentType.$key]]/[[contentItem.$key]]/[[item.$key]]">
-                <paper-icon-item content-key="[[contentType.$key]]" item-key="[[item.$key]]">
-                  <span item-icon>[[index]]</span>
-                  <paper-item-body two-line>
-                    <div>
-                      <strong>[[item.frontMatter.title]]</strong>
-                    </div>
-                    <div secondary>
-                      [[item.frontMatter.description]]
-                    </div>
-                  </paper-item-body>
-                </paper-icon-item>
-              </a>
-            </template>
+						<template is="dom-repeat" items="[[contentItem]]" as="item">
+							<a class="unstyled" href="/admin/[[contentType.$key]]/[[contentItem.$key]]/[[item.$key]]">
+								<paper-icon-item content-key="[[contentType.$key]]" item-key="[[item.$key]]">
+									<span item-icon>[[index]]</span>
+									<paper-item-body two-line>
+										<div>
+											<strong>[[item.frontMatter.title]]</strong>
+										</div>
+										<div secondary>
+											<template is="dom-if" if="[[!item.isProducts]]">
+												[[item.frontMatter.description]]
+											</template>
+											<ul class="bullet-list">
+												<template is="dom-repeat" items="[[item.frontMatter.variations]]" as="variation">
+                          <li>
+                            [[variation.name]] <span class="inventory" inventory$="[[variation.quantityOnHand]]">[[variation.quantityOnHand]]</span>
+                          </li>
+												</template>
+											</ul>
+
+										</div>
+									</paper-item-body>
+								</paper-icon-item>
+							</a>
+						</template>
 					</paper-material>
 				</template>
 			</div>
@@ -73,6 +102,8 @@
 	<script>
     Polymer({
        is: "content-view",
+
+       behaviors: [CartBehavior],
 
        properties: {
          session: String,
@@ -87,6 +118,8 @@
        },
 
        _flatten: function(contentData) {
+         var flattenVariations = this.flattenVariations;
+
          function flatten(obj) {
            if (Array.isArray(obj)) return obj;
 
@@ -94,6 +127,9 @@
            var temp = []; 
            for (var prop in obj) {
              if (prop == 'all' || prop == 'updated') continue;
+             if (obj[prop].frontMatter && obj[prop].isProducts) {
+               obj[prop].frontMatter = flattenVariations(obj[prop].frontMatter);
+             }
              result.push(obj[prop].frontMatter ? obj[prop] : flatten(obj[prop]));
              result[result.length - 1].$key = prop;
            }
