@@ -6,38 +6,71 @@
 <link rel="import" href="../shared-styles.html">
 
 <link rel="import" href="../firebase-behavior/firebase-behavior.html">
+<link rel="import" href="../cart-behavior/cart-behavior.html">
 
 <dom-module id="product-view">
-  <template>
-    <style include="shared-styles">
-      :host {
-        display: block;
+	<template>
+		<style include="shared-styles">
+			:host {
+				display: block;
+			}
+      .variation {
+        max-width: 20rem;
+        margin: 1rem;
       }
-    </style>
+      [hidden] {
+        display: none;
+      } 
+		</style>
 
-    <firebase-document id="product" app-name="[[appName]]" path="[[path]]" data="{{productData}}"></firebase-document>
-    <app-indexeddb-mirror key="[[path]]" session="[[session]]" data="{{productData}}" persisted-data="{{product}}"></app-indexeddb-mirror>
+		<firebase-document id="product" app-name="[[appName]]" path="[[path]]" data="{{productData}}"></firebase-document>
+		<app-indexeddb-mirror key="[[path]]" session="[[session]]" data="{{productDataFlattened}}" persisted-data="{{product}}"></app-indexeddb-mirror>
 
-    <paper-material elevation="1">
-      <h3>[[product.frontMatter.class]]: [[product.frontMatter.title]]</h3>
-      <aside>[[product.frontMatter.description]]</aside>
-      <hr>
-      <marked-element markdown="[[product.content]]">
-        <div class="markdown-html"></div>
-      </marked-element>
-    </paper-material>
-  </template>
-  <script>
+		<paper-material elevation="1">
+			<h3>[[product.frontMatter.class]]: [[product.frontMatter.title]]</h3>
+			<aside>[[product.frontMatter.description]]</aside>
+		</paper-material>
+
+		<div class="layout horizontal wrap start-justified">
+			<template is="dom-repeat" items="[[product.frontMatter.variations]]" as="variation">
+				<paper-material class="variation" elevation="1">
+					<h3>[[variation.name]]</h3>
+					<ul class="dotted-list">
+						<li>Price: [[variation.price]]</li>
+						<li hidden$="[[!variation.quantityOnHand]]">Qty on hand: [[variation.quantityOnHand]]</li>
+						<li hidden$="[[!variation.sku]]">SKU: [[variation.sku]]</li>
+						<li>Slug: [[variation.slug]]</li>
+					</ul>
+				</paper-material>
+			</template>
+		</div>
+
+		<paper-material elevation="1">
+			<marked-element markdown="[[product.content]]">
+				<div class="markdown-html"></div>
+			</marked-element>
+		</paper-material>
+	</template>
+	<script>
     Polymer({
        is: "product-view",
 
-       behaviors: [FirebaseBehavior],
+       behaviors: [FirebaseBehavior,  CartBehavior],
 
        properties: {
          appName: String,
          session: String,
-         path: String, 
-       }
+         path: String,
+         productDataFlattened: {
+           type: Object,
+           computed: '_flatten(productData, productData.frontMatter)'
+         }
+       },
+
+      _flatten: function(productData, frontMatter) {
+        return productData.frontMatter = this.flattenVariations(frontMatter), productData;
+      },       
+       
     });
   </script>
 </dom-module>

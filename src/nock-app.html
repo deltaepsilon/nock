@@ -34,6 +34,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="app-status-indicator/app-status-indicator.html">
 <link rel="import" href="firebase-behavior/firebase-behavior.html">
 <link rel="import" href="notifications-controller/notifications-controller.html">
+<link rel="import" href="page-title/page-title.html">
+<link rel="import" href="back-button/back-button.html">
 <script src="../bower_components/lodash/dist/lodash.min.js"></script>
 
 <dom-module id="nock-app">
@@ -117,17 +119,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				color: black;
 				font-weight: bold;
 			}
-      app-toolbar[page="admin"] {
-        background-color: var(--app-secondary-color);
-      }
-      .admin-title {
-        display: none;
-      }
-      app-toolbar[page="admin"] .admin-title {
-        display: block;
-      }
-      app-toolbar[page="admin"] .app-title {
-        display: none;
+
+      app-toolbar a {
+        color: white;
+        text-decoration: none;
+        font-size: 1rem;
+        margin: 0 1rem;
       }
 		</style>
 
@@ -135,8 +132,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 		<firebase-app app="{{firebaseApp}}" name="[[env.firebaseConfig.appName]]" api-key="[[env.firebaseConfig.apiKey]]" auth-domain="[[env.firebaseConfig.authDomain]]"
 			database-url="[[env.firebaseConfig.databaseURL]]" storage-bucket="[[env.firebaseConfig.storageBucket]]"></firebase-app>
 		<app-location route="{{route}}"></app-location>
-		<app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
-		<app-route route="{{subroute}}" pattern="/:id" data="{{subrouteData}}"></app-route>
+		<app-route id="route" route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+		<app-route id="subroute" route="{{subroute}}" pattern="/:subPage" data="{{subrouteData}}" tail="{{subrouteTail}}"></app-route>
 		<app-localstorage-document key="session" data="{{sessionKey}}"></app-localstorage-document>
 		<auth-controller id="authController" firebase-app="[[firebaseApp]]" user="{{user}}" notifications="[[notifications]]" firebase-config="[[env.firebaseConfig]]"
 			queue-path="[[model.user.write.login]]" google-client-id="[[env.google.clientId]]"></auth-controller>
@@ -150,9 +147,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 			<app-drawer>
 				<app-toolbar>Menu</app-toolbar>
 				<iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-					<a name="one" href="/one">View One</a>
-					<a name="two" href="/two">View Two</a>
-					<a name="three" href="/three">View Three</a>
+          <a name="dashboard" href="/dashboard">Dashboard</a>
+          <a name="classes" href="/classes">Classes</a>
+          <a name="feedback" href="/feedback">Feedback</a>
 					<hr>
 					<template is="dom-if" if="[[!user]]">
 						<paper-item on-click="login">Login</paper-item>
@@ -180,11 +177,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 				<app-header condenses reveals effects="waterfall">
 					<app-toolbar page$="[[page]]">
 						<paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
-            <template is=""></template>
-						<div main-title class="app-title">Nock</div>
-            <div main-title class="admin-title">Admin</div>
+            <back-button id="backButton" route="[[route]]" sub-route="[[subroute]]"></back-button>
+            <page-title main-title page="[[page]]" sub-page="[[subPage]]"></page-title>
+            <a name="products" href="/products">Products</a>
             <notifications-controller id="notificationsController" app-name="[[firebaseApp.name]]" notifications-path="[[notificationsPath]]"
-			notifications="{{notifications}}"></notifications-controller>
+			notifications="{{notifications}}" style="margin-top: -6px"></notifications-controller>
+            <a name="dashboard" href="/dashboard" style="margin-top: -3px;">
+              <iron-icon icon="account-circle"></iron-icon>
+            </a>
 					</app-toolbar>
 				</app-header>
 
@@ -192,6 +192,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 					<one-view name="one"></one-view>
           <two-view name="two"></two-view>
           <three-view name="three"></three-view>
+          <products-view name="products"></products-view>
           <admin-view id="adminView" name="admin" session="[[session]]" route="[[subroute]]" firebase-app="[[firebaseApp]]" model="[[model]]" account="[[account]]"></admin-view>
 					<fourohfour-view name="fourohfour"></fourohfour-view>
 				</iron-pages>
@@ -261,15 +262,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       observers: [
         '_routePageChanged(routeData.page)',
+        '_subPageChanged(subrouteData.subPage)',
         '_handleFirebaseApp(firebaseApp)',
-        '_handleAlerts(alerts, alerts.splices)'
+        '_handleAlerts(alerts, alerts.splices)',
       ],
 
       listeners: {
         error: '_errorHandler',
         alert: '_alertHandler',
         removeNotification: '_removeNotificationHandler',
-        goTo: '_goTo'
+        goTo: '_goTo',
+        back: '_back'
       },
 
       _handleFirebaseApp: function(firebaseApp) {
@@ -290,6 +293,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _routePageChanged: function(page) {
         this.page = page || 'one';
+      },
+
+      _subPageChanged: function(subPage) {
+        this.subPage = subPage || '';
       },
 
       _pageChanged: function(page) {
@@ -360,6 +367,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       _goTo: function(e) {
         this.page = e.detail.page;
+      },
+
+      _back: function(e) {
+        console.log(this.route, this.subroute, this.subrouteTail);
+        history.back();
+        if (this.page == 'admin') {
+          console.log('back to admin');
+        }
       },
 
       login: function() {

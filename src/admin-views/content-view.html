@@ -1,6 +1,6 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/paper-material/paper-material.html">
-<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
@@ -70,8 +70,7 @@
 						<h3 style="text-transform: capitalize;">[[contentItem.$key]]</h3>
 						<template is="dom-repeat" items="[[contentItem]]" as="item">
 							<a class="unstyled" href="/admin/[[contentType.$key]]/[[contentItem.$key]]/[[item.$key]]">
-								<paper-icon-item content-key="[[contentType.$key]]" item-key="[[item.$key]]">
-									<span item-icon>[[index]]</span>
+								<paper-item content-key="[[contentType.$key]]" item-key="[[item.$key]]">
 									<paper-item-body two-line>
 										<div>
 											<strong>[[item.frontMatter.title]]</strong>
@@ -90,7 +89,7 @@
 
 										</div>
 									</paper-item-body>
-								</paper-icon-item>
+								</paper-item>
 							</a>
 						</template>
 					</paper-material>

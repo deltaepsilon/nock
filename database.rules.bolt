@@ -31,7 +31,7 @@ path /nock/{environment}/content {
 }
 
 path /nock/{environment}/content/{type}/{key} {
-  read()  {isSubscriber(environment, type, key, auth) || isAdmin(environment)}
+  read()  {type == 'products' || isSubscriber(environment, type, key, auth) || isAdmin(environment)}
 }
 
 // Demo stuff. Delete for prod.

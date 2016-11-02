@@ -7,6 +7,8 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/communication-icons.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
@@ -16,20 +18,27 @@
 		<style include="shared-styles">
 			:host {
 				display: block;
+        position: relative;
 			}
       paper-fab {
         font-size: 1rem;
       }
 
-      paper-menu-button[hidden] {
-        display: none;
+      #count {
+        position: absolute;
+        top: .5rem;
+        left: 1.7rem;
+        font-size: .625rem;
       }
 		</style>
 
 		<firebase-query id="notifications" app-name="[[appName]]" path="[[notificationsPath]]" data="{{notifications}}"></firebase-query>
 
-		<paper-menu-button horizontal-align="right" vertical-offset="60" hidden$="[[!count]]">
-			<paper-fab class="dropdown-trigger" mini label="[[count]]"></paper-fab>
+    <span id="count" hidden$="[[!count]]">[[count]]</span>
+		<paper-menu-button horizontal-align="right" vertical-offset="58" disabled$="[[!count]]">  
+      <iron-icon class="dropdown-trigger" icon="[[notificationsIcon]]"></iron-icon>
+      
+			<!--<paper-fab class="dropdown-trigger" mini label="[[count]]"></paper-fab>-->
 			<!--<paper-icon-button icon="announcement" class="dropdown-trigger"></paper-icon-button>-->
 			<paper-menu class="dropdown-content" style="max-height: 50vh;">
 				<template is="dom-repeat" items="[[notifications]]" as="notification">
@@ -63,12 +72,20 @@
          },
          count: {
            type: Number,
-           computed: '_getCount(notifications.length)'
+           computed: '_count(notifications.length)'
+         },
+         notificationsIcon: {
+           type: Boolean,
+           computed: '_notificationsIcon(notifications.length)'
          }
        },
 
-       _getCount: function(length) {
+       _count: function(length) {
          return length;
+       },
+
+       _notificationsIcon: function(length) {
+         return !!length ? 'social:notifications' : 'social:notifications-none';
        },
 
        remove: function(e) {

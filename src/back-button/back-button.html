@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="back-button">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      [hidden] {
+        display: none;
+      }
+    </style>
+    <a href="[[backLink]]" hidden$="[[!backLink]]">
+      <paper-icon-button icon="arrow-back"></paper-icon-button>
+    </a>
+  </template>
+  <script>
+    Polymer({
+       is: "back-button",
+
+       properties: {
+         route: String,
+         subRoute: String,
+         backLink: {
+           type: String,
+           computed: '_backLink(route.path)'
+         },
+         patterns: {
+           type: Array,
+           value: [
+            { pattern: '/fourohfour', link: '/dashboard'},
+            { pattern: '/classes', link: '/dashboard' },
+            { pattern: '/feedback', link: '/dashboard' },
+            { pattern: '/admin/assignments', link: '/admin/content' },
+            { pattern: '/admin/products', link: '/admin/content' },
+            { pattern: '/admin/classes', link: '/admin/content' },
+           ]
+         }
+
+       },
+
+       _backLink: function(path) {
+         var i = this.patterns.length;
+         while (i--) {
+           if (path.match(new RegExp(this.patterns[i].pattern))) return this.patterns[i].link;
+         }
+         return false;
+       }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,44 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="page-title">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+      #page-title {
+        text-transform: capitalize;
+      }
+    </style>
+    <span id="page-title">[[pageTitle]]</span>
+  </template>
+  <script>
+    Polymer({
+       is: "page-title",
+
+       properties: {
+         page: {
+           type: String,
+           value: ''
+         },
+         subPage: {
+           type: String,
+           value: ''
+         },
+         pageTitle: {
+           type: String,
+           computed: '_pageTitle(page, subPage)'
+         }
+       },
+
+       _pageTitle: function(page, subPage) {
+         var pageTitle = 'Nock';
+         if (page.length) pageTitle = page;
+         //if (subPage.length) pageTitle += ': ' + subPage;
+         if (subPage.length) pageTitle = subPage;
+         return pageTitle;
+       }
+    });
+  </script>
+</dom-module>
